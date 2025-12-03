@@ -4,6 +4,49 @@ echo requirements: Docker
 echo.
 
 :: ---------------------------
+:: 0. Проверка Docker
+:: ---------------------------
+where docker >nul 2>&1
+if errorlevel 1 (
+    echo [INFO] Docker не найден. Попробуем установить...
+    echo [INFO] Пожалуйста, скачайте Docker Desktop с официального сайта и установите его вручную.
+    echo https://www.docker.com/products/docker-desktop/
+    pause
+    exit /b 1
+) else (
+    echo [OK] Docker найден.
+)
+
+echo ""
+echo ""
+
+:: ---------------------------
+:: 0.1 Запуск Docker Desktop (если не запущен)
+:: ---------------------------
+tasklist /FI "IMAGENAME eq Docker Desktop.exe" | find /I "Docker Desktop.exe" >nul 2>&1
+if errorlevel 1 (
+    echo [INFO] Запуск Docker Desktop...
+    start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+    echo [INFO] Ожидание запуска Docker (10 секунд)...
+    timeout /t 10 /nobreak >nul
+) else (
+    echo [OK] Docker Desktop уже запущен.
+)
+
+echo ""
+echo ""
+
+:: ---------------------------
+:: 0.2 Добавление скрипта в автозагрузку
+:: ---------------------------
+set SCRIPT_PATH=%~f0
+echo [INFO] Добавляем скрипт в автозагрузку Windows...
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v PFLAC_DEPLOY /t REG_SZ /d "\"%SCRIPT_PATH%\"" /f >nul
+echo [OK] Скрипт добавлен в автозагрузку.
+
+echo ""
+
+:: ---------------------------
 :: 1. Ввод данных для .env
 :: ---------------------------
 set /p NODE_ENV="Введите NODE_ENV (prod/dev): "
